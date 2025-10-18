@@ -6,7 +6,7 @@ ROASTS = ["Пиздец, ты чё, из морга сбежал?", "Блять,
 TRIGGER_WORDS = ["привет", "как дела", "бот", "бери", "давай", "похер", "норм", "го", "здаров", "пох", "похуй", "чё", "ну", "хуй", "заебись", "пиздец", "ебать", "хуета", "бля", "нах", "похерю", "ебаный", "хуйло", "похрен", "ёба"]
 
 async def start(update, context):
-   await update.message.reply_text(f" "Привет педрило🗿 Добавь меня в группу,будет весело") ({', '.join) и упомяни @{context.bot.username}")
+   await update.message.reply_text(f" "Привет педрило) Добавь меня в группу,будет весело") ({', '.join) и упомяни @{context.bot.username}")
 
 async def roast(update, context):
    if update.message.chat.type in ["group", "supergroup"] and (any(word in update.message.text.lower() for word in TRIGGER_WORDS) or f"@{context.bot.username}".lower() in update.message.text.lower()):
