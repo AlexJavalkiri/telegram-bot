@@ -6,18 +6,22 @@ ROASTS = ["Пиздец, ты чё, из морга сбежал?", "Блять,
 TRIGGER_WORDS = ["привет", "как дела", "бот", "бери", "давай", "похер", "норм", "го", "здаров", "пох", "похуй", "чё", "ну", "хуй", "заебись", "пиздец", "ебать", "хуета", "бля", "нах", "похерю", "ебаный", "хуйло", "похрен", "ёба"]
 
 async def start(update, context):
-   await update.message.reply_text(f"Бот с матом! Пиши слова ({', '.join(TRIGGER_WORDS)}) или упомяни @{context.bot.username}")
+    await update.message.reply_text(f"Бот с матом! Пиши слова ({', '.join(TRIGGER_WORDS)}) или упомяни @{context.bot.username}")
 
 async def roast(update, context):
-   if update.message.chat.type in ["group", "supergroup"] and (any(word in update.message.text.lower() for word in TRIGGER_WORDS) or f"@{context.bot.username}".lower() in update.message.text.lower()):
-      await update.message.reply_text(random.choice(ROASTS))
+    if update.message.chat.type in ["group", "supergroup"] and (any(word in update.message.text.lower() for word in TRIGGER_WORDS) or f"@{context.bot.username}".lower() in update.message.text.lower()):
+        await update.message.reply_text(random.choice(ROASTS))
 
 async def welcome(update, context):
-   for member in update.chat_member.new_chat_members:
-      await update.message.reply_text(f"Добро пожаловать, {member.first_name}! Похер, с кладбища сбежал?")
+    for member in update.chat_member.new_chat_members:
+        await update.message.reply_text(f"Добро пожаловать, {member.first_name}! Похер, с кладбища сбежал?")
 
-app = Application.builder().token("8445348429:AAFRx8nu-1JEM_SA3IKF32C3_e6QeaGKJ2Y").build
-app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, roast))
-app.add_handler(ChatMemberHandler(welcome, ChatMemberHandler.CHAT_MEMBER))
-app.run_polling()
+def main():
+    app = Application.builder().token("8445348429:AAFRx8nu-1JEM_SA3IKF32C3_e6QeaGKJ2Y").build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, roast))
+    app.add_handler(ChatMemberHandler(welcome, ChatMemberHandler.CHAT_MEMBER))
+    app.run_polling()
+
+if __name__ == "__main__":
+    main()
