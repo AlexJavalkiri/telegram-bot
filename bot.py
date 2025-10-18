@@ -33,7 +33,7 @@ async def welcome(update, context):
 # Запуск бота
 def main():
     # Создаём бота
-    app = Application.builder().token(TOKEN).build().
+    app = Application.builder().token(TOKEN).build()
     # Добавляем команды
     app.add_handler(CommandHandler("start", start))  # Для /start
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, roast))  # Для слов и упоминаний
