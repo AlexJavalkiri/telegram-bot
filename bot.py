@@ -16,7 +16,7 @@ async def welcome(update, context):
    for member in update.chat_member.new_chat_members:
       await update.message.reply_text(f"Добро пожаловать, {member.first_name}! Похер, с кладбища сбежал?")
 
-app = Application.builder().token(TOKEN).build()
+app = Application.builder().token("8445348429:AAFRx8nu-1JEM_SA3IKF32C3_e6QeaGKJ2Y").build
 app.add_handler(CommandHandler("start", start))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, roast))
 app.add_handler(ChatMemberHandler(welcome, ChatMemberHandler.CHAT_MEMBER))
