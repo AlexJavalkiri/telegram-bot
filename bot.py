@@ -34,11 +34,11 @@ SPECIFIC_RESPONSES = {
     "ваня": "Его пердеж настолько громкий, что ИГЛА-2 путает его с детонацией ᕦ(ò_óˇ)ᕤ",
     "игла2": "Медведь и стая пидорасов",
     "старшина": "Начало мне уже не нравится!",
-    "морсков": "После многих и многих научных исследований, учеными было решено, что это самый медленный человек не то что в России, даже не в мире, в целом, нет существ более медленных чем он",
+    "морсков": "После многих и многих научных исследований,учеными было решено, что это самый медленный человек не то что в России, даже не в мире, в целом, нет существ более медленных чем он",
     "дембель": "Не существует его",
     "виноват": "Виноват военкомат, что призвал тебя",
     "баня": "Не называй горячий душ баней, это же просто горячая вода",
-    "власов сказал": "Ебать, боец, ты чё приказы из жопы выдумал?",
+    "власов сказал": "Ебать, боец , ты чё приказы из жопы выдумал?",
     "бпла": "Беспилотный летательный аппарат, если что!)"
 }
 
@@ -89,83 +89,62 @@ async def who(update, context):
     except Exception as e:
         await update.message.reply_text(f"Ошибка, блять: {str(e)}")
 
-# Реакция на триггерные слова в группах
+# Реакция на триггерные слова в группах (без ROASTS!)
 async def handle_triggers(update, context):
-    if update.message.chat.type in ["group", "supergroup"]:
-        text = update.message.text.lower()
-        # Проверяем, есть ли триггерное слово
-        for word in TRIGGER_WORDS:
-            if re.search(r'\b' + re.escape(word) + r'\b', text):
-                response = SPECIFIC_RESPONSES.get(word)
-                if response:  # Отвечаем только если есть специфический ответ
-                    await update.message.reply_text(response)
-                return
+    try:
+        if update.message.chat.type in ["group", "supergroup"]:
+            text = update.message.text.lower()
+            # Проверяем, есть ли триггерное слово (точное совпадение)
+            for word in TRIGGER_WORDS:
+                if re.search(r'\b' + re.escape(word) + r'\b', text):
+                    response = SPECIFIC_RESPONSES.get(word)
+                    if response:  # Отвечаем только если есть специфический ответ
+                        await update.message.reply_text(response)
+                    return
+    except Exception as e:
+        print(f"Error in handle_triggers: {str(e)}")  # Лог для отладки
 
-# Приветствие новичков и реакция на выход из группы
+# Приветствие новичков и реакция на выход из группы (исправлено для v21)
 async def handle_chat_member(update, context):
-    status = update.chat_member.difference().get("status")
-    new_member = update.chat_member.new_chat_member
-    old_member = update.chat_member.old_chat_member
+    try:
+        # В v21+ используем update.chat_member (ChatMemberUpdated)
+        chat_member_update = update.chat_member
+        old_status = chat_member_update.old_chat_member.status if chat_member_update.old_chat_member else None
+        new_status = chat_member_update.new_chat_member.status
+        user = chat_member_update.from_user  # Пользователь, чей статус изменился
+        first_name = user.first_name if user else "Неизвестный"
 
-    if status == "status":
-        # Проверяем, стал ли пользователь участником (member) или администратором
-        if new_member.status in ["member", "administrator", "creator"]:
+        # Вход в группу (стал member/admin/creator)
+        if new_status in ["member", "administrator", "creator"] and old_status != new_status:
             await update.effective_chat.send_message(
-                f"Добро пожаловать, пидор, в наш гей-клуб, {new_member.user.first_name}!"
+                f"Добро пожаловать, пидор, в наш гей-клуб, {first_name}!"
             )
-        # Проверяем, покинул ли пользователь группу
-        elif old_member.status in ["member", "administrator", "creator"] and new_member.status == "left":
+        # Выход из группы (стал left/kicked)
+        elif new_status in ["left", "kicked"] and old_status not in ["left", "kicked"]:
             await update.effective_chat.send_message(
-                f"Пошёл нахуй, ебанный натурал, {old_member.user.first_name}!"
+                f"Пошёл нахуй, ебанный натурал, {first_name}!"
             )
+    except Exception as e:
+        print(f"Error in handle_chat_member: {str(e)}")  # Лог для отладки
 
-# Запуск бота
+# Запуск бота (polling для тестов)
 def main():
+    if not TOKEN:
+        print("Ошибка: TOKEN не задан в environment variables!")
+        return
+
     # Создаём бота с токеном
     app = Application.builder().token(TOKEN).build()
     
-    # Добавляем команды
+    # Добавляем handlers
     app.add_handler(CommandHandler("start", start))  # Для /start
     app.add_handler(CommandHandler("who", who))  # Для /who
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_triggers))  # Для триггерных слов
-    app.add_handler(ChatMemberHandler(handle_chat_member, ChatMemberHandler.CHAT_MEMBER))  # Для новичков и ухода
+    app.add_handler(ChatMemberHandler(handle_chat_member, ChatMemberHandler.CHAT_MEMBER))  # Для новичков и ухода (v21+)
     
-    # Запускаем бота
-    app.run_polling()
-
-# Старт программы
-if __name__ == "__main__":
-    main()# Приветствие новичков и реакция на выход из группы
-async def handle_chat_member(update, context):
-    status = update.chat_member.difference().get("status")
-    new_member = update.chat_member.new_chat_member
-    old_member = update.chat_member.old_chat_member
-
-    if status == "status":
-        # Проверяем, стал ли пользователь участником (member) или администратором
-        if new_member.status in ["member", "administrator", "creator"]:
-            await update.effective_chat.send_message(
-                f"Добро пожаловать, пидор, в наш гей-клуб, {new_member.user.first_name}!"
-            )
-        # Проверяем, покинул ли пользователь группу
-        elif old_member.status in ["member", "administrator", "creator"] and new_member.status == "left":
-            await update.effective_chat.send_message(
-                f"Пошёл нахуй, ебанный натурал, {old_member.user.first_name}!"
-            )
-
-# Запуск бота
-def main():
-    # Создаём бота с токеном
-    app = Application.builder().token(TOKEN).build()
-    
-    # Добавляем команды
-    app.add_handler(CommandHandler("start", start))  # Для /start
-    app.add_handler(CommandHandler("who", who))  # Для /who
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, roast))  # Для слов и упоминаний
-    app.add_handler(ChatMemberHandler(handle_chat_member, ChatMemberHandler.CHAT_MEMBER))  # Для новичков и ухода
-    
-    # Запускаем бота
-    app.run_polling()
+    # Запускаем бота (polling)
+    print("Бот запущен в режиме polling...")
+    app.run_polling(drop_pending_updates=True)
 
 # Старт программы
 if __name__ == "__main__":
