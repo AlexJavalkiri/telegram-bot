@@ -1,4 +1,4 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, ChatMemberHandler, filters
+from telegram.ext import Application, CommandHandler, MessageHandler, ChatMemberHandler, filters
 import random, os
 
 TOKEN = os.getenv("8445348429:AAFRx8nu-1JEM_SA3IKF32C3_e6QeaGKJ2Y")
