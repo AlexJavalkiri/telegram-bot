@@ -3,7 +3,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, ChatMember
 import random, os
 
 # Читаем токен из переменной окружения Render
-TOKEN = os.getenv" TOKEN = "8445348429":AAFRx8nu-1JEM_SA3IKF32C3_e6QeaGKJ2Y"
+TOKEN = os.getenv" (TOKEN = "8445348429":AAFRx8nu-1JEM_SA3IKF32C3_e6QeaGKJ2Y")
 # Матерные фразы для ответа
 ROASTS = [
     "Пиздец, ты чё, из морга сбежал?",
