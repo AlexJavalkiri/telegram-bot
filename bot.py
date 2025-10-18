@@ -16,24 +16,98 @@ ROASTS = [
     "Пиздец, ты реально ебанулся?",
     "Блять, это ж надо так обосраться!",
     "Хули ты трындишь, дебил?",
-    "Ебаный в рот, завали ебало!"
+    "Ебаный в рот, завали ебало!",
+    "Чё, блять, опять хуйню несёшь?",
+    "Похуй мне, твой пиздец не катит!",
+    "Сука, ты как из жопы вылез!",
+    "Ебать, это не текст, а ебаный стыд!",
+    "На хуй иди, мудила ебаный!"
 ]
 
 # Слова, на которые бот реагирует
 TRIGGER_WORDS = [
     "привет", "похер", "бля", "хуй", "пиздец",
     "ебать", "сука", "охуеть", "ебаный", "нахуй",
-    "хули", "ебало", "говно", "похуй", "заебал"
+    "хули", "ебало", "говно", "похуй", "заебал",
+    "мудила", "пиздецки", "хуета", "ебан", "жопа",
+    "нет", "да", "первый", "циркулярная", "хахаха",
+    "хпхп", "хпхпхп", "хаха", "матроскин"
 ]
+
+# Специфические ответы на слова
+SPECIFIC_RESPONSES = {
+    "нет": "Минет",
+    "да": "Пизда",
+    "первый": "Пидорас",
+    "привет": "Здарова, заебал!",
+    "циркулярная": "Да ты заебал",
+    "похуй": "Мне тоже",
+    "хахаха": "Дохуя смешно тебе?",
+    "хпхп": "Дохуя смешно тебе?",
+    "хпхпхп": "Дохуя смешно тебе?",
+    "хаха": "Дохуя смешно тебе?",
+    "матроскин": "Ты тоже такой медленный?"
+}
 
 # Команда /start
 async def start(update, context):
-    await update.message.reply_text(f"Привет! Добавь меня в группу, будет весело! и упомяни @{context.bot.username}")
+    await update.message.reply_text(
+        f"Привет! Добавь меня в группу, будет весело! и упомяни @{context.bot.username}"
+    )
+
+# Команда /who (Кто сегодня пиздализ?)
+async def who(update, context):
+    if update.message.chat.type not in ["group", "supergroup"]:
+        await update.message.reply_text("Эта команда работает только в группах!")
+        return
+
+    # Проверяем, была ли команда уже вызвана в этой группе
+    if context.chat_data.get("pizdaliz_called"):
+        await update.message.reply_text("я же блять сказал, кто сегодня пиздализ :)")
+        return
+
+    try:
+        # Получаем список участников группы
+        members = await context.bot.get_chat_members(update.effective_chat.id)
+        # Фильтруем только пользователей (не ботов)
+        users = [member.user for member in members if not member.user.is_bot]
+        
+        if len(users) < 2:
+            await update.message.reply_text("В группе слишком мало людей, чтобы выбрать пиздализов!")
+            return
+
+        # Выбираем двух случайных участников
+        pizdalizs = random.sample(users, 2)
+        pizdaliz1 = pizdalizs[0]
+        pizdaliz2 = pizdalizs[1]
+
+        # Формируем ссылки на пользователей
+        pizdaliz1_link = f"@{pizdaliz1.username}" if pizdaliz1.username else pizdaliz1.first_name
+        pizdaliz2_link = f"@{pizdaliz2.username}" if pizdaliz2.username else pizdaliz2.first_name
+
+        # Отправляем ответ
+        await update.message.reply_text(
+            f"Сегодня пиздализы: {pizdaliz1_link} и {pizdaliz2_link}!"
+        )
+
+        # Помечаем, что команда была вызвана
+        context.chat_data["pizdaliz_called"] = True
+
+    except Exception as e:
+        await update.message.reply_text(f"Ошибка, блять: {str(e)}")
+
 # Реакция на слова или упоминания в группах
 async def roast(update, context):
     if update.message.chat.type in ["group", "supergroup"]:
         text = update.message.text.lower()
-        if any(word in text for word in TRIGGER_WORDS) or f"@{context.bot.username}".lower() in text:
+        # Проверяем, есть ли триггерное слово или упоминание бота
+        for word in TRIGGER_WORDS:
+            if word in text:
+                # Если есть специфический ответ, используем его
+                response = SPECIFIC_RESPONSES.get(word, random.choice(ROASTS))
+                await update.message.reply_text(response)
+                return
+        if f"@{context.bot.username}".lower() in text:
             await update.message.reply_text(random.choice(ROASTS))
 
 # Приветствие новичков и реакция на выход из группы
@@ -46,7 +120,7 @@ async def handle_chat_member(update, context):
         # Проверяем, стал ли пользователь участником (member) или администратором
         if new_member.status in ["member", "administrator", "creator"]:
             await update.effective_chat.send_message(
-                f"Добро пожаловать пидор в наш гей-клуб, {new_member.user.first_name}!"
+                f"Добро пожаловать, пидор, в наш гей-клуб, {new_member.user.first_name}!"
             )
         # Проверяем, покинул ли пользователь группу
         elif old_member.status in ["member", "administrator", "creator"] and new_member.status == "left":
@@ -57,10 +131,11 @@ async def handle_chat_member(update, context):
 # Запуск бота
 def main():
     # Создаём бота с токеном
-    app = Application.builder().token(TOKEN).build()  # Использует токен из переменной TOKEN
+    app = Application.builder().token(TOKEN).build()
     
     # Добавляем команды
     app.add_handler(CommandHandler("start", start))  # Для /start
+    app.add_handler(CommandHandler("who", who))  # Для /who
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, roast))  # Для слов и упоминаний
     app.add_handler(ChatMemberHandler(handle_chat_member, ChatMemberHandler.CHAT_MEMBER))  # Для новичков и ухода
     
