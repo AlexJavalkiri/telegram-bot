@@ -28,7 +28,7 @@ TRIGGER_WORDS = [
 
 # Команда /start
 async def start(update, context):
-    await update.message.reply_text(f"Привет! Добавь меня в группу, будет весело!
+    await update.message.reply_text(f"Привет! Добавь меня в группу, будет весело!)
 
 # Реакция на слова или упоминания в группах
 async def roast(update, context):
